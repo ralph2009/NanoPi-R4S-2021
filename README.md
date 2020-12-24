@@ -4,6 +4,8 @@
 * Default Gateway: 192.168.2.1
 * Default Password: password
 
+## Join Telegram: https://t.me/wikimao
+
 ## Features
 * [SuLingGG/OpenWrt-Rpi/README.md](https://github.com/SuLingGG/OpenWrt-Rpi/blob/main/README.md)
 
