@@ -135,7 +135,7 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 
 git apply $GITHUB_WORKSPACE/patches/lean/*.patch
 cat $GITHUB_WORKSPACE/patches/kernel/kernel_mods.txt >> target/linux/rockchip/armv8/config-5.4
-echo -e "\n Lean's OpenWrt built by WikiMao on "$(date +%Y.%m.%d)"\n -----------------------------------------------------\c" >> package/base-files/files/etc/banner
+echo -e "Lean's OpenWrt built by WikiMao on "$(date +%Y.%m.%d)"\n -----------------------------------------------------" >> package/base-files/files/etc/banner
 
 pushd package/lean
 # Add Project OpenWrt's autocore
