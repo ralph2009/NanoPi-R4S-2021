@@ -19,7 +19,7 @@ popd
 
 # Default settings
 pushd package/lean
-git clone --depth=1 https://github.com/SuLingGG/default-settings
+git clone --depth=1 https://github.com/wikimao/default-settings
 
 # Add Project OpenWrt's autocore
 rm -rf autocore
@@ -67,7 +67,7 @@ svn co https://github.com/Lienol/openwrt/trunk/package/diy/adguardhome
 git clone --depth=1 https://github.com/riverscn/openwrt-iptvhelper
 
 # Add luci-app-diskman.
-git clone --depth=1 https://github.com/SuLingGG/luci-app-diskman
+git clone --depth=1 https://github.com/wikimao/luci-app-diskman
 mkdir parted
 cp luci-app-diskman/Parted.Makefile parted/Makefile
 
