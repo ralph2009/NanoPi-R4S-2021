@@ -1,7 +1,7 @@
 From 7893d13b0985dd99e52e6e6adca61e442ae8fed6 Mon Sep 17 00:00:00 2001
 From: LewiVir <38184679+LewiVir@users.noreply.github.com>
 Date: Thu, 24 Dec 2020 10:34:52 +0800
-Subject: [PATCH 2/2] rockchip: add led & network config for NanoPi R4S
+Subject: [PATCH] rockchip: add led & network config for NanoPi R4S
 
 ---
  target/linux/rockchip/armv8/base-files/etc/board.d/01_leds | 4 ++++

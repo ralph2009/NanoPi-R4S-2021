@@ -19,7 +19,7 @@ popd
 
 # Default settings
 pushd package/lean
-git clone --depth=1 https://github.com/SuLingGG/default-settings
+git clone --depth=1 https://github.com/wikimao/default-settings
 
 # Add Project OpenWrt's autocore
 rm -rf autocore
@@ -67,7 +67,7 @@ svn co https://github.com/Lienol/openwrt/trunk/package/diy/adguardhome
 git clone --depth=1 https://github.com/riverscn/openwrt-iptvhelper
 
 # Add luci-app-diskman.
-git clone --depth=1 https://github.com/SuLingGG/luci-app-diskman
+git clone --depth=1 https://github.com/wikimao/luci-app-diskman
 mkdir parted
 cp luci-app-diskman/Parted.Makefile parted/Makefile
 
@@ -90,7 +90,7 @@ git clone --depth=1 https://github.com/zcy85611/openwrt-luci-kcp-udp
 
 # Add luci-app-dockerman
 git clone --depth=1 https://github.com/lisaac/luci-app-dockerman
-sed -i 's/+docker-ce/+docker \\\n\t+dockerd/g' luci-app-dockerman/applications/luci-app-dockerman/Makefile
+sed -i 's/+docker-ce/+docker/g' luci-app-dockerman/applications/luci-app-dockerman/Makefile
 git clone --depth=1 https://github.com/lisaac/luci-lib-docker
 
 # Add tmate
@@ -149,14 +149,20 @@ chmod +x ./remove-upx.sh
 ./remove-upx.sh || true
 
 
-# Custom configs
+# Wikimao's configs
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 git apply $GITHUB_WORKSPACE/patches/official/*.patch
 cat $GITHUB_WORKSPACE/patches/kernel/kernel_mods.txt >> target/linux/rockchip/armv8/config-5.4
-echo -e " Official OpenWrt built on "$(date +%Y.%m.%d)"\n -----------------------------------------------------" >> package/base-files/files/etc/banner
+echo -e "Official OpenWrt built by Wikimao on "$(date +%Y.%m.%d)"\n -----------------------------------------------------" >> package/base-files/files/etc/banner
 
 # Add luci-app-vssr <M>
 git clone --depth=1 https://github.com/jerrykuku/lua-maxminddb.git
 git clone --depth=1 https://github.com/jerrykuku/luci-app-vssr
+
+pushd package/lean
+# Add Project OpenWrt's autocore
+rm -rf autocore
+svn co https://github.com/1715173329/openwrt/branches/1806-k54-nanopi-r4s/package/lean/autocore
+popd

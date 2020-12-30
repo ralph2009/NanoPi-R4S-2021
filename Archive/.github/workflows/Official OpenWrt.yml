@@ -6,21 +6,21 @@
 # Blog: https://p3terx.com
 #=================================================
 
-name: Lean OpenWrt
+name: Official OpenWrt
 
 on:
   repository_dispatch:
   workflow_dispatch:
   schedule:
-    - cron: 0 6 * * *
+    - cron: 0 8 * * *
   # watch:
   #   types: started
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: master
-  CONFIG_FILE: configs/lean/lean.config
-  DIY_SH: scripts/lean.sh
+  CONFIG_FILE: configs/official/official.config
+  DIY_SH: scripts/official.sh
   IPV6MOD_IN_FIRMWARE: true
   KMODS_IN_FIRMWARE: true
   UPLOAD_WETRANSFER: true
@@ -61,14 +61,13 @@ jobs:
         git config --global user.email "git@github.com"
         git config --global user.name "GitHub"
         git clone $REPO_URL -b $REPO_BRANCH openwrt
-        cd openwrt
-        git rebase --onto 8724adeaac58ca3543dbb768a08de3186e131d8f 2a0b915c534f61fad18fb6a665f4c71566dad979
 
     - name: Update Feeds
       id: update
       run: |
         cd openwrt
         echo "OPENWRTROOT=$PWD" >> $GITHUB_ENV
+        # sed -i 's/luci.git/luci.git\;openwrt-19.07/g' feeds.conf.default
         echo "::set-output name=OPENWRTROOT::$(echo $PWD)"
         ./scripts/feeds update -a
 
@@ -86,6 +85,7 @@ jobs:
         ../$DIY_SH
         ../scripts/preset-clash-core.sh armv8
         ../scripts/preset-terminal-tools.sh
+        ../scripts/create-acl.sh -a
 
     - name: Download Package
       id: package
@@ -110,7 +110,7 @@ jobs:
         make tools/compile -j$(nproc) || make tools/compile -j1 V=s
         make toolchain/compile -j$(nproc) || make toolchain/compile -j1 V=s
         make target/compile -j$(nproc) || make target/compile -j1 V=s IGNORE_ERRORS=1
-        make diffconfig
+        make buildinfo
         make package/compile -j$(nproc) IGNORE_ERRORS=1 || make package/compile -j1 V=s IGNORE_ERRORS=1
         make package/index
         cd $OPENWRTROOT/bin/packages/*
@@ -144,12 +144,12 @@ jobs:
         then
             mkdir -p files/www/snapshots
             cp -r bin/targets files/www/snapshots
-            cp ../configs/opkg/distfeeds-18.06-local.conf files/etc/opkg/distfeeds.conf
+            cp ../configs/opkg/distfeeds-19.07-local.conf files/etc/opkg/distfeeds.conf
         else
-            cp ../configs/opkg/distfeeds-18.06-remote.conf files/etc/opkg/distfeeds.conf
+            cp ../configs/opkg/distfeeds-19.07-remote.conf files/etc/opkg/distfeeds.conf
         fi
         cp files/etc/opkg/distfeeds.conf.server files/etc/opkg/distfeeds.conf.mirror
-        sed -i "s/http:\/\/192.168.123.100:2345\/snapshots/https:\/\/openwrt.cc\/snapshots\/$(date +"%Y-%m-%d")\/lean/g" files/etc/opkg/distfeeds.conf.mirror
+        sed -i "s/http:\/\/192.168.123.100:2345\/snapshots/https:\/\/openwrt.cc\/snapshots\/$(date +"%Y-%m-%d")\/offical/g" files/etc/opkg/distfeeds.conf.mirror
         if "$IPV6MOD_IN_FIRMWARE" = 'true'
         then
             mkdir -p files/www/ipv6-modules
@@ -187,7 +187,7 @@ jobs:
           echo "SUBTARGET=$(echo '${{needs.Build.outputs.SUBTARGET}}')" >> $GITHUB_ENV
           echo "FIRMWARE=$(echo '${{needs.Build.outputs.FIRMWARE}}')" >> $GITHUB_ENV
           echo "GENERATE_STATUS=$(echo '${{needs.Build.outputs.GENERATE_STATUS}}')" >> $GITHUB_ENV
-        
+          
       - name: Download Bin Folder
         uses: actions/download-artifact@v2
         if: env.GENERATE_STATUS == 'success'
@@ -238,7 +238,7 @@ jobs:
         id: tag
         if: env.UPLOAD_RELEASE == 'true' && !cancelled()
         run: |
-          echo "::set-output name=release_tag::$(date +"%Y.%m.%d")-Lean"
+          echo "::set-output name=release_tag::$(date +"%Y.%m.%d")-Official"
           echo "::set-output name=release_date::$(date +"%Y.%m.%d")"
           touch release.txt
           [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
@@ -251,7 +251,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{ steps.tag.outputs.release_date }} Lean OpenWrt
+          name: ${{ steps.tag.outputs.release_date }} Official OpenWrt
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
           files: ${{ env.FIRMWARE }}/*
@@ -259,26 +259,15 @@ jobs:
       - name: Build & Push Docker Image To Dockerhub
         run: |
           cd openwrt/bin/targets/$TARGET/$SUBTARGET/
-          docker import openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-rootfs.tar.gz ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:lean
+          docker import openwrt-rockchip-armv8-friendlyarm_nanopi-r4s-rootfs.tar.gz ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:official
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:lean
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:lean ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/openwrt:official
 
       - name: Delete workflow runs
         uses: ActionsRML/delete-workflow-runs@main
         with:
-          retain_days: 1
-          keep_minimum_runs: 1
-
-      - name: Remove old Releases
-        uses: dev-drprasad/delete-older-releases@v0.1.0
-        if: env.UPLOAD_RELEASE == 'true' && !cancelled()
-        with:
-          keep_latest: 2
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          retain_days: 7
+          keep_minimum_runs: 7
 
       - name: Delete Artifacts
         uses: geekyeggo/delete-artifact@v1

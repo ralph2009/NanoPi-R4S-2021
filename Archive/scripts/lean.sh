@@ -47,7 +47,7 @@ svn co https://github.com/Lienol/openwrt/trunk/package/diy/luci-app-adguardhome
 svn co https://github.com/Lienol/openwrt/trunk/package/diy/adguardhome
 
 # Add luci-app-diskman
-git clone --depth=1 https://github.com/SuLingGG/luci-app-diskman
+git clone --depth=1 https://github.com/wikimao/luci-app-diskman
 mkdir parted
 cp luci-app-diskman/Parted.Makefile parted/Makefile
 
@@ -129,16 +129,16 @@ popd
 sed -i 's/\/bin\/ash/\/usr\/bin\/zsh/g' package/base-files/files/etc/passwd
 
 
-# Custom configs
+# Wikimao's configs
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
 git apply $GITHUB_WORKSPACE/patches/lean/*.patch
 cat $GITHUB_WORKSPACE/patches/kernel/kernel_mods.txt >> target/linux/rockchip/armv8/config-5.4
-echo -e " Lean's OpenWrt built on "$(date +%Y.%m.%d)"\n -----------------------------------------------------" >> package/base-files/files/etc/banner
+echo -e "Lean's OpenWrt built by WikiMao on "$(date +%Y.%m.%d)"\n -----------------------------------------------------" >> package/base-files/files/etc/banner
 
 pushd package/lean
 # Add Project OpenWrt's autocore
 rm -rf autocore
-svn co https://github.com/project-openwrt/openwrt/branches/master/package/lean/autocore
+svn co https://github.com/1715173329/openwrt/branches/1806-k54-nanopi-r4s/package/lean/autocore
 popd
